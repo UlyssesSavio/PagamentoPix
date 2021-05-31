@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.zup.edu";
+option java_outer_classname = "KeyManager";
+option objc_class_prefix = "HLW";
+
+import "google/protobuf/timestamp.proto";
+
+package br.com.zup.edu;
+
+service KeyManagerService {
+  rpc cadastra (KeyPixRequest) returns (KeyPixResponse) {}
+}
+
+service KeyManagerRemove{
+  rpc remove(KeyRemoveRequest) returns (KeyRemoveResponse){}
+}
+
+service KeyManagerCarrega{
+  rpc carrega(CarregaChavePixRequest) returns (CarregaChavePixResponse){}
+}
+
+service KeyManagerLista{
+  rpc lista(ListaChavesPixRequest) returns (ListaChavesPixResponse){}
+}
+
+message ListaChavesPixRequest{
+  string clientId=1;
+}
+
+message ListaChavesPixResponse{
+  message ChavePix{
+    string pixId=1;
+    tipoChave tipoChave=2;
+    string chave=3;
+    tipo tipoConta=4;
+    google.protobuf.Timestamp criadaEm=5;
+  }
+
+  string clienteId=1;
+  repeated ChavePix chaves=2;
+
+}
+
+
+message CarregaChavePixRequest{
+  message FiltroPorPixId{
+    string clientId=1;
+    string pixId = 2;
+  }
+
+  oneof filtro{
+    FiltroPorPixId pixId=1;
+    string chave=2;
+  }
+}
+
+message CarregaChavePixResponse{
+  message ChavePix{
+    message ContaInfo{
+      tipo tipo = 1;
+      string instituicao=2;
+      string nomeDoTitular=3;
+      string cpfDoTitular=4;
+      string agencia=5;
+      string numeroDaConta=6;
+    }
+
+    tipoChave tipo=1;
+    string chave=2;
+    ContaInfo conta=3;
+    google.protobuf.Timestamp criadaEm=4;
+
+  }
+  string clienteId=1;
+  string pixId=2;
+  ChavePix chave=3;
+
+}
+
+
+enum tipo{
+  CONTA_CORRENTE=0;
+  CONTA_POUPANCA=1;
+}
+
+enum tipoChave{
+  CPF=0;
+  TELEFONE=1;
+  EMAIL=2;
+  RANDOM=3;
+
+}
+//asd a
+message KeyRemoveRequest{
+  string idUsuario =1;
+  string chave =2;
+}
+message KeyRemoveResponse{
+  string idUsuario =1;
+  string chave =2;
+}
+
+
+message KeyPixRequest{
+  string identificadorCliente=1;
+  string chaveASerGerada=2;
+  tipo tipo=3;
+  tipoChave tipoChave=4;
+
+
+
+}
+
+message KeyPixResponse{
+  string chavePix=1;
+}

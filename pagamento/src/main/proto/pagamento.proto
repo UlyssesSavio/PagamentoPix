@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.zup.edu";
+option java_outer_classname = "Pagamento";
+option objc_class_prefix = "HLW";
+
+package com.zup.edu;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/money.proto";
+
+service PagamentoService {
+  rpc pagamento (PagamentoRequest) returns (PagamentoResponse) {}
+  rpc geraFatura (FaturaRequest) returns (FaturaResponse){}
+  rpc pagaFatura (PagaRequest) returns (PagaResponse){}
+}
+
+message PagaRequest{
+  string chavePagador=1;
+  string qrCodeFatura=2;
+}
+
+message PagaResponse{
+  google.protobuf.Timestamp pagadaEm=1;
+}
+
+message FaturaRequest{
+  string chaveRecebidor=1;
+  string valor=2;
+}
+
+message FaturaResponse{
+  google.protobuf.Timestamp criadaEm=1;
+}
+
+message PagamentoRequest {
+
+  string chavePagador = 1;
+  string chaveRecebidor=2;
+  string valor=3;
+}
+
+message PagamentoResponse {
+  string nomePagador = 1;
+  string nomeRecebidor=2;
+  string valor=3;
+  google.protobuf.Timestamp dataRealizada=4;
+}
