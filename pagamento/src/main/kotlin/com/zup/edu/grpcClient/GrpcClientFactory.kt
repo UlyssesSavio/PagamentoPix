@@ -10,7 +10,7 @@ import javax.inject.Singleton
 class GrpcClientFactory {
 
     @Singleton
-    fun buscaClientStub(@GrpcChannel("keyManager") channel: ManagedChannel): KeyManagerCarregaGrpc.KeyManagerCarregaBlockingStub?{
-        return KeyManagerCarregaGrpc.newBlockingStub(channel)
+    fun buscaClientStub(@GrpcChannel("keyManager") channel: ManagedChannel): KeyManagerCarregaGrpc.KeyManagerCarregaFutureStub?{
+        return KeyManagerCarregaGrpc.newFutureStub(channel)
     }
 }

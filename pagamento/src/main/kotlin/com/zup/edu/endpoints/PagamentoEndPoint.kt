@@ -3,6 +3,8 @@ package com.zup.edu.endpoints
 import br.com.zup.edu.CarregaChavePixRequest
 import br.com.zup.edu.CarregaChavePixResponse
 import br.com.zup.edu.KeyManagerCarregaGrpc
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.zxing.qrcode.QRCodeWriter
 import com.livraria.erro.ErrorHandler
 import com.zup.edu.*
@@ -20,26 +22,28 @@ import javax.inject.Singleton
 
 @ErrorHandler
 @Singleton
-class PagamentoEndPoint(val grpcClient: KeyManagerCarregaGrpc.KeyManagerCarregaBlockingStub,
+class PagamentoEndPoint(val grpcClient: KeyManagerCarregaGrpc.KeyManagerCarregaFutureStub,
                         val repository:PagamentoRepository,
                         val repositoryFatura:FaturaRepository): PagamentoServiceGrpc.PagamentoServiceImplBase() {
 
     override fun pagamento(request: PagamentoRequest, responseObserver: StreamObserver<PagamentoResponse>) {
-        var pagador: CarregaChavePixResponse? =null
-        var recebidor:CarregaChavePixResponse?=null
 
-        Completable.fromAction {
-            pagador = grpcClient.carrega(CarregaChavePixRequest.newBuilder().setChave(request.chavePagador).build())
-            recebidor = grpcClient.carrega(CarregaChavePixRequest.newBuilder().setChave(request.chaveRecebidor).build())
+        val pagador = grpcClient.carrega(CarregaChavePixRequest.newBuilder().setChave(request.chavePagador).build())
+        val recebidor = grpcClient.carrega(CarregaChavePixRequest.newBuilder().setChave(request.chaveRecebidor).build())
 
-        }.doOnError {
-            responseObserver.onError(it)
-        }.subscribe{
-            val pag= pagador?.let { recebidor?.let { it1 -> toPagamento(it, it1, request) } }
+        Futures.successfulAsList(listOf(pagador, recebidor)).run {
+            val a = this.get()[0]
+            val b = this.get()[1]
+
+            if(a==null || b==null) throw Status.NOT_FOUND.asRuntimeException()
+
+            val pag = toPagamento(a,b, request)
+
             repository.save(pag)
-            responseObserver.onNext(pag?.toResponse())
+            responseObserver.onNext(pag.toResponse())
             responseObserver.onCompleted()
         }
+
 
     }
 
